@@ -9,8 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@slack/bolt": "^4.2.0",
+    "@slack/socket-mode": "^2.0.3",
+    "@slack/web-api": "^7.8.0",
+    "airtable": "^0.12.2",
+    "next": "15.1.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.1.4"
+    "react-dom": "^19.0.0"
   }
 }
