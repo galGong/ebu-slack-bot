@@ -235,8 +235,9 @@ const initSocketMode = () => {
     }
   });
 
+  // Connect to Slack
   socketModeClient.start().catch(error => {
-    console.error('❌ Failed to connect to Slack via Socket Mode:', error);
+    console.error('Failed to start Socket Mode:', error);
   });
 
   return { slack, socketModeClient };
