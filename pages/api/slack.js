@@ -3,14 +3,20 @@ import initSocketMode from '../../utils/initSocketMode';
 import { sendInitialMessage, sendThreadMessage } from '../../utils/slack';
 import { getReleaseItems, createThreadTracking } from '../../utils/airtable';
 
-// Initialize Socket Mode only on the server side
-console.log('🚀 Starting Slack API handler');
-console.log('💫 Environment:', process.env.NODE_ENV);
-console.log('🔑 Bot Token exists:', !!process.env.SLACK_BOT_TOKEN);
-console.log('🎟️ App Token exists:', !!process.env.SLACK_APP_TOKEN);
+// At the top of the file, outside of the handler
+let socketModeInitialized = false;
 
-const { slack, socketModeClient } = initSocketMode();
-console.log('📡 Socket Mode initialization complete');
+// Replace lines 7-13 with:
+if (!socketModeInitialized) {
+  console.log('🚀 Starting Slack API handler');
+  console.log('💫 Environment:', process.env.NODE_ENV);
+  console.log('🔑 Bot Token exists:', !!process.env.SLACK_BOT_TOKEN);
+  console.log('🎟️ App Token exists:', !!process.env.SLACK_APP_TOKEN);
+
+  const { slack, socketModeClient } = initSocketMode();
+  console.log('📡 Socket Mode initialization complete');
+  socketModeInitialized = true;
+}
 
 // /pages/api/slack.js
 export default async function handler(req, res) {
