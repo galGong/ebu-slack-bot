@@ -6,15 +6,28 @@ import { handleAssignDifferentPM } from './interactionHandlers';
 import { sendInitialMessage, sendThreadMessage } from './slack';
 
 const initSocketMode = () => {
-  console.log('🔌 Initializing Socket Mode client...');
+  if (global.socketModeClient) {
+    console.log('🔄 Reusing existing Socket Mode client');
+    return { 
+      slack: global.slackWebClient, 
+      socketModeClient: global.socketModeClient 
+    };
+  }
+
+  console.log('🆕 Creating new Socket Mode client');
   
   const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
   console.log('📡 WebClient initialized');
   
   const socketModeClient = new SocketModeClient({
-    appToken: process.env.SLACK_APP_TOKEN
+    appToken: process.env.SLACK_APP_TOKEN,
+    logLevel: 'DEBUG'
   });
   console.log('🔗 SocketModeClient created');
+
+  // Store in global object
+  global.slackWebClient = slack;
+  global.socketModeClient = socketModeClient;
 
   // Add connection event listeners
   socketModeClient.on('connecting', () => {
