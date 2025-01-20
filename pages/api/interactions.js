@@ -50,67 +50,76 @@ export default async function handler(req, res) {
         }
 
         case 'refresh_items': {
-          // Get updated release items for the PM
-          const releaseItems = await getReleaseItems(user.name);
-          
-          // Create options for the select menu
-          const options = releaseItems.map(item => ({
-            text: { 
-              type: 'plain_text',
-              text: String(item.feature).substring(0, 75),
-              emoji: true
-            },
-            value: String(item.id)
-          }));
-
-          // Update the select menu with new options
-          await slack.chat.update({
-            channel: channel.id,
-            ts: container.message_ts,
-            blocks: [
-              {
-                type: "section",
-                text: {
-                  type: "mrkdwn",
-                  text: "Please select a release item:"
-                }
+          try {
+            // Get user's full name from Slack
+            const userInfo = await slack.users.info({ user: user.id });
+            const pmName = userInfo.user.real_name;
+            
+            // Get updated release items for the PM using full name
+            const releaseItems = await getReleaseItems(pmName);
+            
+            // Create options for the select menu
+            const options = releaseItems.map(item => ({
+              text: { 
+                type: 'plain_text',
+                text: String(item.feature).substring(0, 75),
+                emoji: true
               },
-              {
-                type: "actions",
-                block_id: "release_actions",
-                elements: [
-                  {
-                    type: "static_select",
-                    action_id: "select_release",
-                    placeholder: {
-                      type: "plain_text",
-                      text: "Select a release item",
-                      emoji: true
-                    },
-                    options: options
-                  },
-                  {
-                    type: "button",
-                    action_id: "refresh_items",
-                    text: {
-                      type: "plain_text",
-                      text: "🔄 Refresh Items",
-                      emoji: true
-                    }
-                  },
-                  {
-                    type: "button",
-                    action_id: "assign_different_pm",
-                    text: {
-                      type: "plain_text",
-                      text: "👤 Assign to Different PM",
-                      emoji: true
-                    }
+              value: String(item.id)
+            }));
+
+            // Update the select menu with new options
+            await slack.chat.update({
+              channel: channel.id,
+              ts: container.message_ts,
+              blocks: [
+                {
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: "Please select a release item:"
                   }
-                ]
-              }
-            ]
-          });
+                },
+                {
+                  type: "actions",
+                  block_id: "release_actions",
+                  elements: [
+                    {
+                      type: "static_select",
+                      action_id: "select_release",
+                      placeholder: {
+                        type: "plain_text",
+                        text: "Select a release item",
+                        emoji: true
+                      },
+                      options: options
+                    },
+                    {
+                      type: "button",
+                      action_id: "refresh_items",
+                      text: {
+                        type: "plain_text",
+                        text: "🔄 Refresh Items",
+                        emoji: true
+                      }
+                    },
+                    {
+                      type: "button",
+                      action_id: "assign_different_pm",
+                      text: {
+                        type: "plain_text",
+                        text: "👤 Assign to Different PM",
+                        emoji: true
+                      }
+                    }
+                  ]
+                }
+              ]
+            });
+          } catch (error) {
+            console.error('Error refreshing items:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+          }
           break;
         }
 
