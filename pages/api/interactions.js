@@ -4,13 +4,22 @@ import { getReleaseItems, updateThreadTracking, createThreadTracking, getThreadT
 import { handleAssignDifferentPM } from '../../utils/interactionHandlers';
 
 export default async function handler(req, res) {
+  // Handle Slack URL verification challenge
+  if (req.body.type === 'url_verification') {
+    return res.status(200).json({ challenge: req.body.challenge });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { payload } = req.body;
-    const interaction = JSON.parse(payload);
+    // Check if payload exists and parse it
+    const payload = req.body.payload || req.body;
+    const interaction = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    
+    console.log('Received interaction:', interaction);
+
     const { type, actions, user, container, channel } = interaction;
 
     if (type === 'block_actions') {
@@ -199,9 +208,11 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({ ok: true });
-
   } catch (error) {
-    console.error('Error handling interaction:', error);
+    console.error('Error handling interaction:', error, {
+      body: req.body,
+      payload: req.body.payload
+    });
     return res.status(500).json({
       error: 'Internal server error',
       details: error.message
