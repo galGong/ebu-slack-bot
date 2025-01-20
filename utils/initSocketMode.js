@@ -6,15 +6,43 @@ import { handleAssignDifferentPM } from './interactionHandlers';
 import { sendInitialMessage, sendThreadMessage } from './slack';
 
 const initSocketMode = () => {
+  console.log('🔌 Initializing Socket Mode client...');
+  
   const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+  console.log('📡 WebClient initialized');
+  
   const socketModeClient = new SocketModeClient({
     appToken: process.env.SLACK_APP_TOKEN
   });
+  console.log('🔗 SocketModeClient created');
+
+  // Add connection event listeners
+  socketModeClient.on('connecting', () => {
+    console.log('🔄 Attempting to connect to Slack...');
+  });
+
+  socketModeClient.on('connected', () => {
+    console.log('✅ Successfully connected to Slack');
+  });
+
+  socketModeClient.on('disconnected', () => {
+    console.log('❌ Disconnected from Slack');
+  });
+
+  socketModeClient.on('error', (error) => {
+    console.error('🚨 Socket Mode error:', error);
+  });
 
   socketModeClient.on('interactive', async ({ body, ack }) => {
+    console.log('📥 Interactive event received');
+    console.log('📦 Event type:', body.type);
+    console.log('🏷️ Action ID:', body.actions?.[0]?.action_id);
+    console.log('📍 Channel:', body.channel?.id);
+    console.log('🧵 Thread TS:', body.container?.thread_ts);
+    
     try {
       await ack();
-      console.log('🔄 Received interaction:', JSON.stringify(body, null, 2));
+      console.log('✅ Event acknowledged');
       
       if (body.type === 'block_actions') {
         const action = body.actions[0];
