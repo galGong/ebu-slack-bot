@@ -8,6 +8,12 @@ import { sendInitialMessage, sendThreadMessage } from './slack';
 const initSocketMode = () => {
   if (global.socketModeClient) {
     console.log('🔄 Reusing existing Socket Mode client');
+    if (!global.socketModeClient.started) {
+      console.log('🔌 Restarting existing Socket Mode client...');
+      global.socketModeClient.start().catch(error => {
+        console.error('❌ Failed to restart Socket Mode:', error);
+      });
+    }
     return { 
       slack: global.slackWebClient, 
       socketModeClient: global.socketModeClient 
@@ -21,7 +27,13 @@ const initSocketMode = () => {
   
   const socketModeClient = new SocketModeClient({
     appToken: process.env.SLACK_APP_TOKEN,
-    logLevel: 'DEBUG'
+    logLevel: 'DEBUG',
+    clientOptions: {
+      // Add reconnection parameters
+      reconnect: true,
+      maxReconnectionAttempts: 10,
+      reconnectionBackoff: 1000,
+    }
   });
   console.log('🔗 SocketModeClient created');
 
@@ -276,10 +288,15 @@ const initSocketMode = () => {
     }
   });
 
-  // Connect to Slack
-  socketModeClient.start().catch(error => {
-    console.error('Failed to start Socket Mode:', error);
-  });
+  // Start the client and log the result
+  console.log('🚀 Starting Socket Mode client...');
+  socketModeClient.start()
+    .then(() => {
+      console.log('✅ Socket Mode client started successfully');
+    })
+    .catch(error => {
+      console.error('❌ Failed to start Socket Mode:', error);
+    });
 
   return { slack, socketModeClient };
 };
