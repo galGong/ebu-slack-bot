@@ -1,6 +1,7 @@
 // /pages/api/interactions.js
 import { slack, sendInitialMessage, sendThreadMessage } from '../../utils/slack';
 import { getReleaseItems, updateThreadTracking, createThreadTracking, getThreadTrackingByThreadId } from '../../utils/airtable';
+import { handleAssignDifferentPM } from '../../utils/interactionHandlers';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -14,6 +15,7 @@ export default async function handler(req, res) {
 
     if (type === 'block_actions') {
       const action = actions[0];
+      console.log('Processing action:', action.action_id);
 
       switch (action.action_id) {
         case 'select_release': {
